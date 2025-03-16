@@ -1,5 +1,4 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -10,4 +9,6 @@ public class PocketPokerPalAppApplication {
 		SpringApplication.run(PocketPokerPalAppApplication.class, args);
 	}
 
+
 }
+
