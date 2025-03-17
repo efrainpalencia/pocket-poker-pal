@@ -7,6 +7,8 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -14,6 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class PdfProcessingServiceTest {
 
     private PdfProcessingService pdfProcessingService;
@@ -55,15 +58,15 @@ class PdfProcessingServiceTest {
             PDPage page = new PDPage();
             document.addPage(page);
 
-            PDPageContentStream contentStream = new PDPageContentStream(document, page);
-            contentStream.beginText();
-            contentStream.setFont(PDType1Font.HELVETICA, 12);
-            contentStream.newLineAtOffset(100, 700);
-            contentStream.showText("1: Rule One Explanation.");
-            contentStream.newLineAtOffset(0, -20);
-            contentStream.showText("2: Rule Two Explanation.");
-            contentStream.endText();
-            contentStream.close();
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                contentStream.beginText();
+                contentStream.setFont(PDType1Font.HELVETICA, 12);
+                contentStream.newLineAtOffset(100, 700);
+                contentStream.showText("1: Rule One Explanation.");
+                contentStream.newLineAtOffset(0, -20);
+                contentStream.showText("2: Rule Two Explanation.");
+                contentStream.endText();
+            }
 
             document.save(outputStream);
         }

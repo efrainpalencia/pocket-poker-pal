@@ -2,7 +2,9 @@ package com.pocket_poker_pal_app.PocketPokerPalApp.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.embedding.EmbeddingClient;
 
 import java.util.Collections;
@@ -11,10 +13,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class OpenAIEmbeddingServiceTest {
 
     private OpenAIEmbeddingService embeddingService;
     private EmbeddingClient mockEmbeddingClient;
+
+
 
     @BeforeEach
     void setUp() {

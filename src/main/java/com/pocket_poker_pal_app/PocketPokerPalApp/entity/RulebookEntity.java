@@ -2,10 +2,11 @@ package com.pocket_poker_pal_app.PocketPokerPalApp.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.security.core.userdetails.User;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+
 
 @Entity
 @Table(name = "rulebooks")
@@ -26,7 +27,7 @@ public class RulebookEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by")
-    private User uploadedBy;
+    private AdminUser uploadedBy;
 
     // Enum
     public enum Source {

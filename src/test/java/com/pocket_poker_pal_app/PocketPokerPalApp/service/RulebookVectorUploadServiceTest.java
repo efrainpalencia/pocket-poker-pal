@@ -5,7 +5,11 @@ import com.pocket_poker_pal_app.PocketPokerPalApp.exception.EmptyRulebookExcepti
 import com.pocket_poker_pal_app.PocketPokerPalApp.repository.RulebookRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -16,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+
+@ExtendWith(MockitoExtension.class)
 class RulebookVectorUploadServiceTest {
 
     private PdfProcessingService pdfProcessingService;
@@ -24,6 +30,7 @@ class RulebookVectorUploadServiceTest {
     private RulebookRepository rulebookRepository;
 
     private RulebookVectorUploadService uploadService;
+
 
     @BeforeEach
     void setUp() {

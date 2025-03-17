@@ -24,6 +24,17 @@ public abstract class UserEntity {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "enabled")
+    private boolean enabled = false;
+
+    @Column(name = "verification_token")
+    private String verificationToken;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
