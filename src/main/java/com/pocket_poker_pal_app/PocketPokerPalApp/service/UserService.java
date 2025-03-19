@@ -1,29 +1,18 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp.service;
 
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.AdminUser;
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.ClientUser;
-import com.pocket_poker_pal_app.PocketPokerPalApp.repository.AdminUserRepository;
-import com.pocket_poker_pal_app.PocketPokerPalApp.repository.ClientUserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.UserEntity;
 
 import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+public interface UserService {
+    Optional<? extends UserEntity> findUserByEmail(String email);
+    Optional<? extends UserEntity> findUserByUsername(String username);
+    Optional<? extends UserEntity> findUserByVerificationToken(String token);
+    Optional<? extends UserEntity> findUserByResetToken(String resetToken);
 
-    private final AdminUserRepository adminUserRepo;
-    private final ClientUserRepository clientUserRepo;
+    boolean emailExists(String email);
+    boolean usernameExists(String username);
 
-    public Optional<AdminUser> findAdminByEmail(String email) {
-        return adminUserRepo.findByEmail(email);
-    }
-
-    public Optional<ClientUser> findClientByEmail(String email) {
-        return clientUserRepo.findByEmail(email);
-    }
-
-    // Add more logic as needed...
+    void requestResetToken(UserEntity user);
+    void updatePassword(UserEntity user, String newPassword);
 }
-

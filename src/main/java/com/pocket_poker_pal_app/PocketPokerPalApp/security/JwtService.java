@@ -1,5 +1,11 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp.security;
 
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.AdminUser;
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.ClientUser;
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.UserEntity;
+import com.pocket_poker_pal_app.PocketPokerPalApp.service.AdminUserService;
+import com.pocket_poker_pal_app.PocketPokerPalApp.service.ClientUserService;
+import com.pocket_poker_pal_app.PocketPokerPalApp.service.EmailService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -10,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +28,7 @@ public class JwtService {
 
     @Value("${jwt.secret}") // inject from application.properties or ENV
     private String secretKey;
+
 
     public String extractUsername(String token) {
         return extractClaim(token, claims -> claims.getSubject());
@@ -73,4 +81,24 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    public String generatePasswordResetToken(UserEntity user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        claims.put("email", user.getEmail());
+        claims.put("type", "passwordReset"); // optional: mark it as a reset token
+
+        long expiration = 1000 * 60 * 60; // 1 hour in milliseconds
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.getEmail())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+
+
 }

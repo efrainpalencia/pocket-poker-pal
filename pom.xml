@@ -74,6 +74,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- JavaMailSender -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- JSON Processing -->
 		<dependency>
 			<groupId>org.json</groupId>
