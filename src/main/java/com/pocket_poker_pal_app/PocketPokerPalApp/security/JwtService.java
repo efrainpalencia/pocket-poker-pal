@@ -1,11 +1,6 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp.security;
 
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.AdminUser;
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.ClientUser;
 import com.pocket_poker_pal_app.PocketPokerPalApp.entity.UserEntity;
-import com.pocket_poker_pal_app.PocketPokerPalApp.service.AdminUserService;
-import com.pocket_poker_pal_app.PocketPokerPalApp.service.ClientUserService;
-import com.pocket_poker_pal_app.PocketPokerPalApp.service.EmailService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -16,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
