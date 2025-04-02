@@ -57,40 +57,41 @@ public class AuthController {
                     .body("An admin already exists with this email: " + request.getEmail());
         }
 
-                try {
-                    AdminUser adminUser = new AdminUser();
-                    adminUser.setEmail(request.getEmail());
-                    adminUser.setFirstName(request.getFirstName());
-                    adminUser.setLastName(request.getLastName());
-                    adminUser.setPassword(passwordEncoder.encode(request.getPassword()));
-                    adminUser.setEnabled(false);
-                    adminUser.setRole(User.Role.ADMIN);
-                    adminUser.setVerificationToken(verificationToken);
-                    adminUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
+        try {
+            AdminUser adminUser = new AdminUser();
+            adminUser.setEmail(request.getEmail());
+            adminUser.setFirstName(request.getFirstName());
+            adminUser.setLastName(request.getLastName());
+            adminUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            adminUser.setEnabled(false);
+            adminUser.setRole(User.Role.ADMIN);
+            adminUser.setVerificationToken(verificationToken);
+            adminUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
 
-                    AdminUser savedAdmin = adminUserService.createAdminUser(adminUser);
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(savedAdmin.getEmail());
+            AdminUser savedAdmin = adminUserService.createAdminUser(adminUser);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(savedAdmin.getEmail());
 
-                    String accessToken = jwtService.generateAccessToken(userDetails);
-                    String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-
-                    String verificationLink = "https://yourdomain.com/verify-email?token=" + verificationToken;
-                    emailService.sendVerificationEmail(adminUser.getEmail(), verificationLink);
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
 
 
-                    return ResponseEntity.status(HttpStatus.CREATED)
-                            .body(new AuthResponse(accessToken, refreshToken));
+            String verificationLink = "https://yourdomain.com/verify-email?token=" + verificationToken;
+            emailService.sendVerificationEmail(adminUser.getEmail(), verificationLink);
 
-                } catch (Exception e) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("An error occurred while registering the admin.");
-                }
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new AuthResponse(accessToken, refreshToken));
+
+        } catch (Exception e) {
+//            e.printStackTrace(); // Logs to console
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     // ✅ Register Client User
     @PostMapping("/register/client")
-    public ResponseEntity<String> registerClient(@RequestBody @Valid ClientRegisterRequest request) {
+    public Object registerClient(@RequestBody @Valid ClientRegisterRequest request) {
 
         if (userServiceImpl.emailExists(request.getEmail())) {
             return ResponseEntity.badRequest().body("Email already exists");
@@ -101,23 +102,31 @@ public class AuthController {
         }
 
 
+        try {
+            ClientUser clientUser = new ClientUser();
+            clientUser.setEmail(request.getEmail());
+            clientUser.setUsername(request.getUsername());
+            clientUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            clientUser.setRole(User.Role.CLIENT);
+            clientUser.setEnabled(false);
+            clientUser.setVerificationToken(verificationToken);
+            clientUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
 
-        ClientUser clientUser = new ClientUser();
-        clientUser.setEmail(request.getEmail());
-        clientUser.setUsername(request.getUsername());
-        clientUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        clientUser.setRole(User.Role.CLIENT);
-        clientUser.setEnabled(false);
-        clientUser.setVerificationToken(verificationToken);
-        clientUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
+            ClientUser savedClientUser = clientUserService.createClientUser(clientUser);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(savedClientUser.getEmail());
 
-        clientUserService.createClientUser(clientUser);
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        String verificationLink = getVerificationLink + verificationToken;
-        emailService.sendVerificationEmail(clientUser.getEmail(), verificationLink);
+            String verificationLink = getVerificationLink + verificationToken;
+            emailService.sendVerificationEmail(clientUser.getEmail(), verificationLink);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Client registered successfully! Please verify your email within 24 hours.");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new AuthResponse(accessToken, refreshToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     // ✅ Verify user by token

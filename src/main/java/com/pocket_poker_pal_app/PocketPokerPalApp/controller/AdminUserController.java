@@ -20,7 +20,7 @@ public class AdminUserController {
 
     // ✅ Get all Admin Users
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<List<AdminUser>> getAllAdminUsers() {
         List<AdminUser> users = adminUserService.getAllAdminUsers();
         return ResponseEntity.ok(users);
@@ -28,15 +28,15 @@ public class AdminUserController {
 
     // ✅ Get Admin User by ID
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{id}")
+    @GetMapping("/view/{id}")
     public ResponseEntity<AdminUser> getAdminUserById(@PathVariable UUID id) {
         AdminUser user = adminUserService.getAdminUserById(id);
         return ResponseEntity.ok(user);
     }
 
     // ✅ Create Admin User
-//    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/create")
     public ResponseEntity<String> createAdminUser(@Valid @RequestBody AdminUser adminUser) {
         AdminUser createdUser = adminUserService.createAdminUser(adminUser);
         return ResponseEntity.status(201).body("Admin user created successfully! ID: " + createdUser.getId());
@@ -44,7 +44,7 @@ public class AdminUserController {
 
     // ✅ Update Admin User
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<String> updateAdminUser(@PathVariable UUID id, @Valid @RequestBody AdminUser adminUser) {
         adminUserService.updateAdminUser(id, adminUser);
         return ResponseEntity.ok("Admin user updated successfully! ID: " + id);
@@ -52,7 +52,7 @@ public class AdminUserController {
 
     // ✅ Delete Admin User
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteAdminUser(@PathVariable UUID id) {
         adminUserService.deleteAdminUser(id);
         return ResponseEntity.ok("Admin user deleted successfully! ID: " + id);
