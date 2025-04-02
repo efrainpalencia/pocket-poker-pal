@@ -1,18 +1,18 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp.service;
 
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.UserEntity;
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.User;
 
 import java.util.Optional;
 
 public interface UserService {
-    Optional<? extends UserEntity> findUserByEmail(String email);
-    Optional<? extends UserEntity> findUserByUsername(String username);
-    Optional<? extends UserEntity> findUserByVerificationToken(String token);
-    Optional<? extends UserEntity> findUserByResetToken(String resetToken);
+    Optional<? extends User> findUserByEmail(String email);
+    Optional<? extends User> findUserByUsername(String username);
+    Optional<? extends User> findUserByVerificationToken(String token);
+    Optional<? extends User> findUserByResetToken(String resetToken);
 
     boolean emailExists(String email);
     boolean usernameExists(String username);
 
-    void requestResetToken(UserEntity user);
-    void updatePassword(UserEntity user, String newPassword);
+    void requestResetToken(User user);
+    void updatePassword(User user, String newPassword);
 }

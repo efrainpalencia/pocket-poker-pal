@@ -52,27 +52,4 @@ public class ClientUserServiceImpl implements ClientUserService {
         clientUserRepository.deleteById(id);
     }
 
-    @Override
-    public Optional<ClientUser> getClientUserByEmail(String email) {
-        if (!clientUserRepository.existsByEmail(email)) {
-            throw new EntityNotFoundException("Client user not found with email: " + email);
-        }
-        return clientUserRepository.findByEmail(email);
-    }
-
-    @Override
-    public Optional<ClientUser> findByVerificationToken(String verificationToken) {
-        if (!clientUserRepository.existsByVerificationToken(verificationToken)) {
-            throw new EntityNotFoundException("Client user not found with verificationToken: " + verificationToken);
-        }
-        return clientUserRepository.findByVerificationToken(verificationToken);
-    }
-
-    @Override
-    public Optional<ClientUser> findByResetToken(String resetToken) {
-        if (!clientUserRepository.existsByResetToken(resetToken)) {
-            throw new EntityNotFoundException("Client user not found with resetToken: " + resetToken);
-        }
-            return clientUserRepository.findByResetToken(resetToken);
-    }
 }

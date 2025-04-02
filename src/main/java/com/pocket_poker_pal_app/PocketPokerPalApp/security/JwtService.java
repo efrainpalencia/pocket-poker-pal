@@ -1,6 +1,6 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp.security;
 
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.UserEntity;
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -76,7 +76,7 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generatePasswordResetToken(UserEntity user) {
+    public String generatePasswordResetToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
         claims.put("email", user.getEmail());

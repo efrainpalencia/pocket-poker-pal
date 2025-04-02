@@ -18,9 +18,4 @@ public interface ClientUserService {
 
     void deleteClientUser(UUID id);
 
-    Optional<ClientUser> getClientUserByEmail(String email);
-
-    Optional<ClientUser> findByVerificationToken(String verificationToken);
-
-    Optional<ClientUser> findByResetToken(String resetToken);
 }

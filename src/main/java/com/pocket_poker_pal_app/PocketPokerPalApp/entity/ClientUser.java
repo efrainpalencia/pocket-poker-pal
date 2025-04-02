@@ -6,12 +6,13 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "client_users")
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ClientUser extends UserEntity {
+public class ClientUser extends User {
+
+    @Column(unique = true, nullable = false)
+    private String username;
 
 }

@@ -35,7 +35,8 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public void updateAdminUser(UUID id, AdminUser updatedAdmin) {
         AdminUser existingAdmin = getAdminUserById(id);
-        existingAdmin.setUsername(updatedAdmin.getUsername());
+        existingAdmin.setFirstName(updatedAdmin.getFirstName());
+        existingAdmin.setLastName(updatedAdmin.getLastName());
         existingAdmin.setEmail(updatedAdmin.getEmail());
         existingAdmin.setPassword(updatedAdmin.getPassword());
         existingAdmin.setRole(updatedAdmin.getRole());
@@ -50,4 +51,5 @@ public class AdminUserServiceImpl implements AdminUserService {
             adminUserRepository.deleteById(id);
         }
     }
+
 }

@@ -11,13 +11,17 @@ public interface AdminUserRepository extends JpaRepository<AdminUser, UUID> {
 
     boolean existsByEmail(String email);
 
-    boolean existsByUsername(String username);
+    boolean existsByFirstName(String firstName);
+
+    boolean existsByLastName(String lastName);
 
     boolean existsByVerificationToken(String verificationToken);
 
     Optional<AdminUser> findByEmail(String email);
 
-    Optional<AdminUser> findByUsername(String username);
+    Optional<AdminUser> findByFirstName(String firstName);
+
+    Optional<AdminUser> findByLastName(String lastName);
 
     Optional<AdminUser> findByVerificationToken(String token);
 

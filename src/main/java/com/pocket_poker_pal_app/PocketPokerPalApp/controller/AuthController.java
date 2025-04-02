@@ -1,17 +1,20 @@
 package com.pocket_poker_pal_app.PocketPokerPalApp.controller;
 
+import com.pocket_poker_pal_app.PocketPokerPalApp.dto.AdminRegisterRequest;
 import com.pocket_poker_pal_app.PocketPokerPalApp.dto.AuthResponse;
-import com.pocket_poker_pal_app.PocketPokerPalApp.dto.MessageResponse;
-import com.pocket_poker_pal_app.PocketPokerPalApp.dto.RegisterRequest;
+import com.pocket_poker_pal_app.PocketPokerPalApp.dto.ClientRegisterRequest;
 import com.pocket_poker_pal_app.PocketPokerPalApp.entity.AdminUser;
 import com.pocket_poker_pal_app.PocketPokerPalApp.entity.ClientUser;
-import com.pocket_poker_pal_app.PocketPokerPalApp.entity.UserEntity;
+import com.pocket_poker_pal_app.PocketPokerPalApp.entity.User;
 import com.pocket_poker_pal_app.PocketPokerPalApp.security.CustomUserDetailsService;
 import com.pocket_poker_pal_app.PocketPokerPalApp.security.JwtService;
 import com.pocket_poker_pal_app.PocketPokerPalApp.service.*;
 import com.pocket_poker_pal_app.PocketPokerPalApp.serviceImpl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +28,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@PropertySource("classpath:env.properties")
 public class AuthController {
 
     private final JwtService jwtService;
@@ -35,44 +39,58 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private static final int VERIFICATION_EXPIRY_HOURS = 24;
+    private final String verificationToken = UUID.randomUUID().toString();
 
+    @Value("${VERIFICATION_LINK}")
+    private String getVerificationLink;
+
+
+    ApplicationEventPublisher eventPublisher;
 
 
     // ✅ Register Admin User
     @PostMapping("/register/admin")
-    public Object registerAdmin(@RequestBody @Valid RegisterRequest request) {
+    public Object registerAdmin(@RequestBody @Valid AdminRegisterRequest request) {
 
         if (userServiceImpl.emailExists(request.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Email already exists"));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("An admin already exists with this email: " + request.getEmail());
         }
 
-        if (userServiceImpl.usernameExists(request.getUsername())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Username already exists"));
-        }
+                try {
+                    AdminUser adminUser = new AdminUser();
+                    adminUser.setEmail(request.getEmail());
+                    adminUser.setFirstName(request.getFirstName());
+                    adminUser.setLastName(request.getLastName());
+                    adminUser.setPassword(passwordEncoder.encode(request.getPassword()));
+                    adminUser.setEnabled(false);
+                    adminUser.setRole(User.Role.ADMIN);
+                    adminUser.setVerificationToken(verificationToken);
+                    adminUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
 
-        AdminUser adminUser = new AdminUser();
-        adminUser.setEmail(request.getEmail());
-        adminUser.setUsername(request.getUsername());
-        adminUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        adminUser.setRole(UserEntity.Role.ADMIN);
+                    AdminUser savedAdmin = adminUserService.createAdminUser(adminUser);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(savedAdmin.getEmail());
 
-        AdminUser savedAdmin = adminUserService.createAdminUser(adminUser);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(savedAdmin.getEmail());
-
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-        System.console().printf("New token: %s\n", accessToken);
-        System.console().printf("Refresh token: %s\n", refreshToken);
+                    String accessToken = jwtService.generateAccessToken(userDetails);
+                    String refreshToken = jwtService.generateRefreshToken(userDetails);
 
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new AuthResponse(accessToken, refreshToken));
+                    String verificationLink = "https://yourdomain.com/verify-email?token=" + verificationToken;
+                    emailService.sendVerificationEmail(adminUser.getEmail(), verificationLink);
+
+
+                    return ResponseEntity.status(HttpStatus.CREATED)
+                            .body(new AuthResponse(accessToken, refreshToken));
+
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("An error occurred while registering the admin.");
+                }
     }
 
     // ✅ Register Client User
     @PostMapping("/register/client")
-    public ResponseEntity<String> registerClient(@RequestBody @Valid RegisterRequest request) {
+    public ResponseEntity<String> registerClient(@RequestBody @Valid ClientRegisterRequest request) {
 
         if (userServiceImpl.emailExists(request.getEmail())) {
             return ResponseEntity.badRequest().body("Email already exists");
@@ -82,20 +100,20 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Username already exists");
         }
 
-        String verificationToken = UUID.randomUUID().toString();
+
 
         ClientUser clientUser = new ClientUser();
         clientUser.setEmail(request.getEmail());
         clientUser.setUsername(request.getUsername());
         clientUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        clientUser.setRole(UserEntity.Role.CLIENT);
+        clientUser.setRole(User.Role.CLIENT);
         clientUser.setEnabled(false);
         clientUser.setVerificationToken(verificationToken);
         clientUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
 
         clientUserService.createClientUser(clientUser);
 
-        String verificationLink = "https://yourdomain.com/verify-email?token=" + verificationToken;
+        String verificationLink = getVerificationLink + verificationToken;
         emailService.sendVerificationEmail(clientUser.getEmail(), verificationLink);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -106,13 +124,13 @@ public class AuthController {
     @GetMapping("/verify")
     public ResponseEntity<String> verifyUser(@RequestParam("token") String token) {
 
-        Optional<? extends UserEntity> userOpt = userServiceImpl.findUserByVerificationToken(token);
+        Optional<? extends User> userOpt = userServiceImpl.findUserByVerificationToken(token);
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid verification token.");
         }
 
-        UserEntity user = userOpt.get();
+        User user = userOpt.get();
 
         if (user.isEnabled()) {
             return ResponseEntity.badRequest().body("Account is already verified.");
@@ -127,7 +145,7 @@ public class AuthController {
         user.setVerificationTokenExpiry(null);
 
         // Save using appropriate service
-        if (user.getRole() == UserEntity.Role.ADMIN) {
+        if (user.getRole() == User.Role.ADMIN) {
             adminUserService.updateAdminUser(user.getId(), (AdminUser) user);
         } else {
             clientUserService.updateClientUser(user.getId(), (ClientUser) user);
@@ -140,13 +158,13 @@ public class AuthController {
     @PostMapping("/resend-verification")
     public ResponseEntity<String> resendVerification(@RequestParam("email") String email) {
 
-        Optional<? extends UserEntity> userOpt = userServiceImpl.findUserByEmail(email);
+        Optional<? extends User> userOpt = userServiceImpl.findUserByEmail(email);
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with email: " + email);
         }
 
-        UserEntity user = userOpt.get();
+        User user = userOpt.get();
 
         if (user.isEnabled()) {
             return ResponseEntity.badRequest().body("Account already verified.");
@@ -161,13 +179,13 @@ public class AuthController {
         user.setVerificationToken(newToken);
         user.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
 
-        if (user.getRole() == UserEntity.Role.ADMIN) {
+        if (user.getRole() == User.Role.ADMIN) {
             adminUserService.updateAdminUser(user.getId(), (AdminUser) user);
         } else {
             clientUserService.updateClientUser(user.getId(), (ClientUser) user);
         }
 
-        String verificationLink = "https://yourdomain.com/verify-email?token=" + newToken;
+        String verificationLink = getVerificationLink + newToken;
         emailService.sendVerificationEmail(user.getEmail(), verificationLink);
 
         return ResponseEntity.ok("Verification email resent successfully. Please check your inbox.");
@@ -177,14 +195,14 @@ public class AuthController {
     @PostMapping("/password-reset-request")
     public ResponseEntity<String> requestPasswordReset(@RequestParam("email") String email) {
 
-        Optional<? extends UserEntity> userOpt = userServiceImpl.findUserByEmail(email);
+        Optional<? extends User> userOpt = userServiceImpl.findUserByEmail(email);
 
         if (userOpt.isEmpty() || !userOpt.get().isEnabled()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("User not found with email: " + email);
         }
 
-        UserEntity user = userOpt.get();
+        User user = userOpt.get();
 
         userServiceImpl.sendGeneratedPasswordResetToken(user);
 
@@ -196,13 +214,13 @@ public class AuthController {
     @PostMapping("/resend-password-reset")
     public ResponseEntity<String> resendPasswordReset(@RequestParam("email") String email) {
 
-        Optional<? extends UserEntity> userOpt = userServiceImpl.findUserByEmail(email);
+        Optional<? extends User> userOpt = userServiceImpl.findUserByEmail(email);
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with email: " + email);
         }
 
-        UserEntity user = userOpt.get();
+        User user = userOpt.get();
 
         // Optional: add throttling logic here
         if (user.getResetTokenExpiry() != null &&
@@ -223,13 +241,13 @@ public class AuthController {
             @RequestParam("token") String token,
             @RequestParam("newPassword") String newPassword) {
 
-        Optional<? extends UserEntity> userOpt = userServiceImpl.findUserByResetToken(token);
+        Optional<? extends User> userOpt = userServiceImpl.findUserByResetToken(token);
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid password reset token.");
         }
 
-        UserEntity user = userOpt.get();
+        User user = userOpt.get();
 
         if (user.getResetTokenExpiry() == null ||
                 user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {

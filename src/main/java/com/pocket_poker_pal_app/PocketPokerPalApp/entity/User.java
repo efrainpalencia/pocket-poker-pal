@@ -10,14 +10,11 @@ import java.util.UUID;
 @MappedSuperclass
 @Data
 @NoArgsConstructor
-public abstract class UserEntity {
+public abstract class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-
-    @Column(unique = true, nullable = false)
-    private String username;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -25,8 +22,10 @@ public abstract class UserEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "enabled")
+    @Column(name = "enabled", nullable = false)
     private boolean enabled = false;
+
+
 
     @Column(name = "verification_token")
     private String verificationToken;

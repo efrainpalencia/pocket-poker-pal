@@ -28,9 +28,11 @@ public class UserServiceImpl implements UserService {
 
     private static final int RESET_TOKEN_EXPIRY_HOURS = 1;
 
-    // ✅ Find user by email (generic for both roles)
+
+
+
     @Override
-    public Optional<? extends UserEntity> findUserByEmail(String email) {
+    public Optional<? extends User> findUserByEmail(String email) {
         Optional<AdminUser> admin = adminUserRepository.findByEmail(email);
         if (admin.isPresent()) return admin;
 
@@ -41,9 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<? extends UserEntity> findUserByUsername(String username) {
-        Optional<AdminUser> admin = adminUserRepository.findByUsername(username);
-        if (admin.isPresent()) return admin;
+    public Optional<? extends User> findUserByUsername(String username) {
 
         Optional<ClientUser> client = clientUserRepository.findByUsername(username);
         if (client.isPresent()) return client;
@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<? extends UserEntity> findUserByVerificationToken(String token) {
+    public Optional<? extends User> findUserByVerificationToken(String token) {
         Optional<AdminUser> admin = adminUserRepository.findByVerificationToken(token);
         if (admin.isPresent()) return admin;
 
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<? extends UserEntity> findUserByResetToken(String resetToken) {
+    public Optional<? extends User> findUserByResetToken(String resetToken) {
         Optional<AdminUser> admin = adminUserRepository.findByResetToken(resetToken);
         if (admin.isPresent()) return admin;
 
@@ -80,16 +80,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean usernameExists(String username) {
-        return adminUserRepository.existsByUsername(username) || clientUserRepository.existsByUsername(username);
+        return clientUserRepository.existsByUsername(username);
     }
 
     @Override
-    public void requestResetToken(UserEntity user) {
+    public void requestResetToken(User user) {
         String newResetToken = UUID.randomUUID().toString();
         user.setResetToken(newResetToken);
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(RESET_TOKEN_EXPIRY_HOURS));
 
-        if (user.getRole() == UserEntity.Role.ADMIN) {
+        if (user.getRole() == User.Role.ADMIN) {
             adminUserService.updateAdminUser(user.getId(), (AdminUser) user);
         } else {
             clientUserService.updateClientUser(user.getId(), (ClientUser) user);
@@ -100,26 +100,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePassword(UserEntity user, String newPassword) {
+    public void updatePassword(User user, String newPassword) {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
 
-        if (user.getRole() == UserEntity.Role.ADMIN) {
+        if (user.getRole() == User.Role.ADMIN) {
             adminUserService.updateAdminUser(user.getId(), (AdminUser) user);
         } else {
             clientUserService.updateClientUser(user.getId(), (ClientUser) user);
         }
     }
 
-    public void sendGeneratedPasswordResetToken(UserEntity user) {
+    public void sendGeneratedPasswordResetToken(User user) {
 
         String resetToken = jwtService.generatePasswordResetToken(user);
         user.setResetToken(resetToken);
         user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
 
         // Save user
-        if (user.getRole() == UserEntity.Role.ADMIN) {
+        if (user.getRole() == User.Role.ADMIN) {
             adminUserService.updateAdminUser(user.getId(), (AdminUser) user);
         } else {
             clientUserService.updateClientUser(user.getId(), (ClientUser) user);

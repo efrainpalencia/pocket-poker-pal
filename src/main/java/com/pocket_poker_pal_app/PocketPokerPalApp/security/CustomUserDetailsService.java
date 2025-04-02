@@ -18,13 +18,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final ClientUserRepository clientUserRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AdminUser admin = adminUserRepository.findByUsername(username).orElse(null);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        AdminUser admin = adminUserRepository.findByEmail(email).orElse(null);
         if (admin != null) {
             return new UserPrincipal(admin);
         }
 
-        ClientUser client = clientUserRepository.findByUsername(username).orElseThrow(() ->
+        ClientUser client = clientUserRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException("User not found"));
         return new UserPrincipal(client);
     }
