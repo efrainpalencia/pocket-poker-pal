@@ -3,6 +3,7 @@ package com.pocket_poker_pal_app.PocketPokerPalApp.controller;
 import com.pocket_poker_pal_app.PocketPokerPalApp.dto.AdminRegisterRequest;
 import com.pocket_poker_pal_app.PocketPokerPalApp.dto.AuthResponse;
 import com.pocket_poker_pal_app.PocketPokerPalApp.dto.ClientRegisterRequest;
+import com.pocket_poker_pal_app.PocketPokerPalApp.dto.LoginRequest;
 import com.pocket_poker_pal_app.PocketPokerPalApp.entity.AdminUser;
 import com.pocket_poker_pal_app.PocketPokerPalApp.entity.ClientUser;
 import com.pocket_poker_pal_app.PocketPokerPalApp.entity.User;
@@ -63,7 +64,7 @@ public class AuthController {
             adminUser.setFirstName(request.getFirstName());
             adminUser.setLastName(request.getLastName());
             adminUser.setPassword(passwordEncoder.encode(request.getPassword()));
-            adminUser.setEnabled(false);
+            adminUser.setEnabled(true); // TODO: Update to false after creating email verification.
             adminUser.setRole(User.Role.ADMIN);
             adminUser.setVerificationToken(verificationToken);
             adminUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
@@ -108,7 +109,7 @@ public class AuthController {
             clientUser.setUsername(request.getUsername());
             clientUser.setPassword(passwordEncoder.encode(request.getPassword()));
             clientUser.setRole(User.Role.CLIENT);
-            clientUser.setEnabled(false);
+            clientUser.setEnabled(true); // TODO: Update to false after creating email verification.
             clientUser.setVerificationToken(verificationToken);
             clientUser.setVerificationTokenExpiry(LocalDateTime.now().plusHours(VERIFICATION_EXPIRY_HOURS));
 
@@ -128,6 +129,64 @@ public class AuthController {
                     .body("An unexpected error occurred: " + e.getMessage());
         }
     }
+
+
+    // ✅ Admin Login
+    @PostMapping("/login/admin")
+    public ResponseEntity<?> loginAdmin(@RequestBody @Valid LoginRequest request) {
+        Optional<AdminUser> userOpt = adminUserService.findByEmail(request.getEmail());
+
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
+        }
+
+        AdminUser user = userOpt.get();
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
+        }
+
+        if (!Boolean.TRUE.equals(user.isEnabled())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account not verified.");
+        }
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
+    }
+
+    // ✅ Client Login
+    @PostMapping("/login/client")
+    public ResponseEntity<?> loginClient(@RequestBody @Valid LoginRequest request) {
+        Optional<ClientUser> userOpt = clientUserService.findByEmail(request.getEmail());
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
+        }
+
+        ClientUser user = userOpt.get();
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
+        }
+
+        if (!Boolean.TRUE.equals(user.isEnabled())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Account not verified.");
+        }
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
+    }
+
+
 
     // ✅ Verify user by token
     @GetMapping("/verify")

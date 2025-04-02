@@ -29,6 +29,12 @@ public class ClientUserServiceImpl implements ClientUserService {
     }
 
     @Override
+    public Optional<ClientUser> findByEmail(String email) {
+        return Optional.ofNullable(clientUserRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Client user not found with email: " + email)));
+    }
+
+    @Override
     public List<ClientUser> getAllClientUsers() {
         return clientUserRepository.findAll();
     }

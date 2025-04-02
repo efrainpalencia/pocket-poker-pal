@@ -12,6 +12,8 @@ public interface ClientUserService {
 
     ClientUser getClientUserById(UUID id);
 
+    Optional<ClientUser> findByEmail(String email);
+
     List<ClientUser> getAllClientUsers();
 
     void updateClientUser(UUID id, ClientUser updatedClient);

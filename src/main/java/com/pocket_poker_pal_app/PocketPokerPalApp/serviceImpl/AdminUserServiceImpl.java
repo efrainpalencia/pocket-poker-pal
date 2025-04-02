@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,6 +26,12 @@ public class AdminUserServiceImpl implements AdminUserService {
     public AdminUser getAdminUserById(UUID id) {
         return adminUserRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Admin user not found with id: " + id));
+    }
+
+    @Override
+    public Optional<AdminUser> findByEmail(String email) {
+        return Optional.ofNullable(adminUserRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Admin user not found with email: " + email)));
     }
 
     @Override

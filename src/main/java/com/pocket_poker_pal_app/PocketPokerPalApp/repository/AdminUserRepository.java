@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface AdminUserRepository extends JpaRepository<AdminUser, UUID> {
 
+
     boolean existsByEmail(String email);
 
     boolean existsByFirstName(String firstName);
