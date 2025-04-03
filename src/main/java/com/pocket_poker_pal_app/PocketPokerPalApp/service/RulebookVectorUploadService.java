@@ -24,25 +24,45 @@ public class RulebookVectorUploadService {
 
     @Transactional
     public void processAndUpload(MultipartFile pdfFile, RulebookEntity rulebookEntity) throws IOException {
-        List<String> chunks = pdfProcessingService.extractChunks(pdfFile);
+        List<String> chunks = pdfProcessingService.extractChunksByBoldTitles(pdfFile);
+
 
         if (chunks.isEmpty()) {
             throw new EmptyRulebookException("PDF parsing resulted in no chunks. Rulebook cannot be processed.");
         }
 
         for (int i = 0; i < chunks.size(); i++) {
-            String chunkText = chunks.get(i);
-            List<Double> embedding = openAIEmbeddingService.generateEmbedding(chunkText);
+            String chunkText = chunks.get(i).trim();
 
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("source", rulebookEntity.getSource().name());
-            metadata.put("rulebook", rulebookEntity.getTitle());
-            metadata.put("rule_version", rulebookEntity.getVersion());
-            metadata.put("chunk_index", i);
-            metadata.put("text", chunkText);
+            if (chunkText.isEmpty()) continue;
 
-            pineconeService.upsertVector(rulebookEntity.getId().toString() + "-chunk-" + i, embedding, metadata);
+            // Clean and truncate
+            String safeChunk = chunkText.length() > 8000
+                    ? chunkText.substring(0, 8000)
+                    : chunkText.replaceAll("[^\\x00-\\x7F]", "");
+
+            try {
+                System.out.println("🔍 Embedding chunk [" + i + "] (length: " + safeChunk.length() + ")");
+                List<Double> embedding = openAIEmbeddingService.generateEmbedding(safeChunk);
+
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("source", rulebookEntity.getSource().name());
+                metadata.put("rulebook", rulebookEntity.getTitle());
+                metadata.put("rule_version", rulebookEntity.getVersion());
+                metadata.put("chunk_index", i);
+                metadata.put("text", safeChunk);
+
+                 pineconeService.upsertVector(rulebookEntity.getId().toString() + "-chunk-" + i, embedding, metadata);
+
+            } catch (Exception e) {
+                System.err.println("❌ Failed to embed chunk [" + i + "]: " + e.getMessage());
+            }
         }
+ // Print debugger
+//        chunks.forEach(chunk -> {
+//            System.out.println("\n\n==== New Chunk ====\n" + chunk);
+//        });
+
 
         rulebookRepository.save(rulebookEntity);
     }
