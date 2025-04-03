@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -71,4 +72,36 @@ public class PineconeService {
             }
         }
     }
+
+    // ✅ Query relevant chunks from Pinecone index
+    public List<String> queryRelevantChunks(List<Double> embedding) throws IOException {
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("vector", new JSONArray(embedding));
+        requestBody.put("topK", 5);
+        requestBody.put("includeMetadata", true);
+
+        Request request = new Request.Builder()
+                .url(pineconeIndexUrl + "/query")
+                .post(RequestBody.create(requestBody.toString(), JSON))
+                .addHeader("Api-Key", pineconeApiKey)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Query failed: " + response.message());
+            }
+
+            JSONObject result = new JSONObject(response.body().string());
+            JSONArray matches = result.getJSONArray("matches");
+
+            List<String> chunks = new ArrayList<>();
+            for (int i = 0; i < matches.length(); i++) {
+                JSONObject metadata = matches.getJSONObject(i).getJSONObject("metadata");
+                chunks.add(metadata.getString("text"));
+            }
+
+            return chunks;
+        }
+    }
+
 }
