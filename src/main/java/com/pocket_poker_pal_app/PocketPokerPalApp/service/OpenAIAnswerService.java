@@ -3,10 +3,8 @@ package com.pocket_poker_pal_app.PocketPokerPalApp.service;
 import com.pocket_poker_pal_app.PocketPokerPalApp.util.PromptBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
