@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -14,12 +17,18 @@ public class AudioQuestionController {
     private final AudioQuestionService audioQuestionService;
 
     @PostMapping("/ask-audio")
-    public ResponseEntity<String> askViaAudio(@RequestParam("audio") MultipartFile audioFile) {
+    public ResponseEntity<?> askViaAudio(@RequestParam("audio") MultipartFile audioFile) {
+        if (audioFile.isEmpty() || !audioFile.getContentType().startsWith("audio/")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please upload a valid audio file."));
+        }
+
         try {
-            String answer = audioQuestionService.handleAudioQuestion(audioFile);
-            return ResponseEntity.ok(answer);
+            Map<String, String> response = audioQuestionService.handleAudioQuestion(audioFile);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to process audio: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to process audio: " + e.getMessage()));
         }
     }
+
 }

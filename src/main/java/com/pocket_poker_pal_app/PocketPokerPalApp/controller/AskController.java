@@ -5,10 +5,7 @@ import com.pocket_poker_pal_app.PocketPokerPalApp.service.OpenAIEmbeddingService
 import com.pocket_poker_pal_app.PocketPokerPalApp.service.PineconeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,11 +17,12 @@ import java.util.Map;
 public class AskController {
 
     private final OpenAIEmbeddingService embeddingService;
-    private final PineconeService pineconeService; // you’ll need to create this
-    private final OpenAIAnswerService openAIAnswerService;   // you’ll need to create this
+    private final PineconeService pineconeService;
+    private final OpenAIAnswerService openAIAnswerService;
 
+    @CrossOrigin(origins = "*")
     @PostMapping
-    public ResponseEntity<String> askQuestion(@RequestBody Map<String, String> request) throws IOException {
+    public ResponseEntity<Map<String, String>> askQuestion(@RequestBody Map<String, String> request) throws IOException {
         String question = request.get("question");
 
         List<Double> questionEmbedding = embeddingService.generateEmbedding(question);
@@ -32,7 +30,8 @@ public class AskController {
 
         String answer = openAIAnswerService.getAnswer(question, relevantChunks);
 
-        return ResponseEntity.ok(answer);
+        return ResponseEntity.ok(Map.of("answer", answer));
     }
 }
+
 
