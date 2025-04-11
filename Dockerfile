@@ -1,28 +1,24 @@
-# Use a base image that includes Maven and JDK
-FROM maven:3.9.4-eclipse-temurin-17 as builder
+# ---------- Build Stage ----------
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
-# Author
-LABEL authors="EFAITECH SOLUTIONS, LLC"
-
-# Set work directory
 WORKDIR /app
 
-# Copy project files
+# Copy all files into the build context
 COPY . .
 
-# Pre-fetch dependencies (optional, speeds up build)
+# Pre-download dependencies (optional but speeds up builds)
 RUN mvn dependency:go-offline
 
-# Build project
+# Build your app
 RUN mvn clean package -DskipTests
 
-# ---- Runtime Image ----
-FROM eclipse-temurin:17-jdk
+# ---------- Runtime Stage ----------
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-# Copy built jar from builder
-COPY --from=builder /app/target/*.jar app.jar
+# Copy JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Run the app
+# Run the application
 CMD ["java", "-jar", "app.jar"]

@@ -1,6 +1,37 @@
-[5/7] RUN ./mvnw dependency:go-offline
-process "/bin/sh -c ./mvnw dependency:go-offline" did not complete successfully: exit code: 126
-  
-  View in context
+name: Deploy to Railway
 
-/bin/sh: 1: ./mvnw: Permission denied
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPEN_AI_EMBEDDING: ${{ secrets.OPEN_AI_EMBEDDING }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          PINECONE_ENVIRONMENT: ${{ secrets.PINECONE_ENVIRONMENT }}
+          PINECONE_INDEX_NAME: ${{ secrets.PINECONE_INDEX_NAME }}
+          PINECONE_PROJECT_ID: ${{ secrets.PINECONE_PROJECT_ID }}
+          PINECONE_INDEX_URL: ${{ secrets.PINECONE_INDEX_URL }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          VERIFICATION_LINK: ${{ secrets.VERIFICATION_LINK }}
+        run: railway up
