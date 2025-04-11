@@ -21,13 +21,9 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Login to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: npx @railway/cli login --token $RAILWAY_TOKEN
-
       - name: Deploy to Railway
         env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -43,4 +39,4 @@ jobs:
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           VERIFICATION_LINK: ${{ secrets.VERIFICATION_LINK }}
-        run: npx @railway/cli up --service backend
+        run: railway up --service backend
