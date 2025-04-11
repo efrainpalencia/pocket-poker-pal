@@ -22,7 +22,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ DB_PASSWORD }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPEN_AI_EMBEDDING: ${{ secrets.OPEN_AI_EMBEDDING }}
           PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
