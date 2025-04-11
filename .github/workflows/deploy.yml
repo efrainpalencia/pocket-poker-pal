@@ -34,5 +34,4 @@ jobs:
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           VERIFICATION_LINK: ${{ secrets.VERIFICATION_LINK }}
-        run: railway up -- --project 17195483-97db-448e-a639-f15992066d27 --service 88020832-5b3a-48d8-ba01-abeddc9f7886
-
+        run: railway up
