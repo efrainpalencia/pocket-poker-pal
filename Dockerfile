@@ -1,23 +1,28 @@
-# Use official JDK image
-FROM eclipse-temurin:17-jdk
+# Use a base image that includes Maven and JDK
+FROM maven:3.9.4-eclipse-temurin-17 as builder
 
 # Author
 LABEL authors="EFAITECH SOLUTIONS, LLC"
 
-# Set working directory
+# Set work directory
 WORKDIR /app
 
-# Copy everything into the container
+# Copy project files
 COPY . .
 
-# 💥 Add this line to force executable permission inside container
-RUN chmod +x ./mvnw
+# Pre-fetch dependencies (optional, speeds up build)
+RUN mvn dependency:go-offline
 
-# Prepare dependencies (optional but recommended)
-RUN ./mvnw dependency:go-offline
+# Build project
+RUN mvn clean package -DskipTests
 
-# Build the app
-RUN ./mvnw clean package -DskipTests
+# ---- Runtime Image ----
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+# Copy built jar from builder
+COPY --from=builder /app/target/*.jar app.jar
 
 # Run the app
-CMD ["java", "-jar", "target/*.jar"]
+CMD ["java", "-jar", "app.jar"]
