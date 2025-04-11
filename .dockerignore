@@ -1,0 +1,19 @@
+# Prevent local config files from getting into the image
+.env
+.env.*
+*.properties
+
+# Build artifacts
+target/
+build/
+out/
+
+# OS files
+.DS_Store
+
+# Git files
+.git
+.gitignore
+
+# Node, if present
+node_modules/
