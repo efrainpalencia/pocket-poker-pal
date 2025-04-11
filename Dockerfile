@@ -9,6 +9,7 @@ COPY . .
 
 # Ensure mvnw is executable inside the container
 RUN chmod +x ./mvnw
+RUN ls -l ./mvnw
 
 # Prepare dependencies and build the app
 RUN ./mvnw dependency:go-offline
