@@ -1,18 +1,23 @@
+# Use official JDK image
 FROM eclipse-temurin:17-jdk
 
+# Author
 LABEL authors="EFAITECH SOLUTIONS, LLC"
 
+# Set working directory
 WORKDIR /app
 
-# Copy everything including .mvn and mvnw
+# Copy everything into the container
 COPY . .
 
-# Ensure mvnw is executable inside the container
+# 💥 Add this line to force executable permission inside container
 RUN chmod +x ./mvnw
-RUN ls -l ./mvnw
 
-# Prepare dependencies and build the app
+# Prepare dependencies (optional but recommended)
 RUN ./mvnw dependency:go-offline
+
+# Build the app
 RUN ./mvnw clean package -DskipTests
 
+# Run the app
 CMD ["java", "-jar", "target/*.jar"]
