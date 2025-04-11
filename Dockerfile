@@ -4,14 +4,13 @@ LABEL authors="EFAITECH SOLUTIONS, LLC"
 
 WORKDIR /app
 
-# Copy and make the wrapper executable BEFORE other commands
-COPY mvnw .
-COPY .mvn .mvn
-RUN chmod +x mvnw
-
-# Now copy everything else
+# Copy everything including .mvn and mvnw
 COPY . .
 
+# Ensure mvnw is executable inside the container
+RUN chmod +x ./mvnw
+
+# Prepare dependencies and build the app
 RUN ./mvnw dependency:go-offline
 RUN ./mvnw clean package -DskipTests
 
