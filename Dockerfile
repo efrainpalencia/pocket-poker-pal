@@ -1,23 +1,23 @@
 # Use official JDK image
 FROM eclipse-temurin:17-jdk
 
-# Author
 LABEL authors="EFAITECH SOLUTIONS, LLC"
 
-# Set working directory
 WORKDIR /app
 
-# Copy everything
-COPY . .
-
-# Make the Maven wrapper executable
+# Copy the Maven wrapper first and set permission before copying the rest
+COPY mvnw .
+COPY .mvn .mvn
 RUN chmod +x mvnw
 
-# Go offline to speed up build
+# Now copy the rest of the project
+COPY . .
+
+# Preload dependencies
 RUN ./mvnw dependency:go-offline
 
 # Build the Spring Boot application
 RUN ./mvnw clean package -DskipTests
 
-# Run the app
+# Run the application
 CMD ["java", "-jar", "target/*.jar"]
