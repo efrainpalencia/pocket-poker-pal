@@ -13,10 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -39,4 +37,5 @@ jobs:
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           VERIFICATION_LINK: ${{ secrets.VERIFICATION_LINK }}
-        run: railway up --service backend
+        run: |
+          railway up --project pocket-poker-pal
