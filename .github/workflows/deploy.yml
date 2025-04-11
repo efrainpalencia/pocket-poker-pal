@@ -16,10 +16,11 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Link Railway Project
+      - name: Railway Login and Link
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
+          echo "$RAILWAY_TOKEN" | railway login --ci
           railway link --environment production --service pocket-poker-pal-backend
 
       - name: Deploy to Railway
