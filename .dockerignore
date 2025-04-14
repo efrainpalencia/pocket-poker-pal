@@ -1,19 +1,29 @@
-# Prevent local config files from getting into the image
+# 🔐 Environment and secrets
 .env
 .env.*
-*.properties
 
-# Build artifacts
+# 🏗️ Build artifacts
 target/
 build/
 out/
 
-# OS files
-.DS_Store
+# ⚙️ IDE & tooling
+*.iml
+.idea/
+.vscode/
+.gradle/
+.mvn/
 
-# Git files
+# 🗑️ OS junk
+.DS_Store
+Thumbs.db
+
+# 🐙 Git
 .git
 .gitignore
 
-# Node, if present
+# 📦 Node (if frontend is in same repo)
 node_modules/
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
