@@ -20,7 +20,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${jwt.secret}") // inject from application.properties or ENV
+    @Value("${JWT_SECRET}") // inject from application.properties or ENV
     private String secretKey;
 
 
