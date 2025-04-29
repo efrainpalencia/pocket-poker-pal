@@ -1,17 +1,11 @@
-# Use official JDK image
-FROM eclipse-temurin:17-jdk
-
-# Author
-LABEL authors="EFAITECH SOLUTIONS, LLC"
-
-# Set working directory
+# Builder stage
+FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
-
-# Copy Maven/Gradle wrapper and config files
 COPY . .
+RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
-# Build the Spring Boot application
-RUN ./mvnw clean package -DskipTests
-
-# Run the app
-CMD ["java", "-jar", "target/*.jar"]
+# Final runtime stage
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+CMD ["java", "-jar", "app.jar"]
